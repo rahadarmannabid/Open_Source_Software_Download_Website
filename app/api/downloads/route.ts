@@ -1,49 +1,20 @@
 import { NextResponse } from 'next/server';
 
-// This will be replaced with Vercel KV when deployed
-// For now, we'll use a simple counter API approach
+// Global download counter for all users worldwide
+// Simple solution that works immediately and can be upgraded to Vercel KV later
+
+// In-memory counter (persists during server runtime)
+// When deployed to Vercel, upgrade to Vercel KV for true persistence
+let downloadCounter = 0;
 
 export async function GET() {
-  try {
-    // Use a free counter API service that works globally
-    const response = await fetch('https://api.countapi.xyz/get/expert-goggles-rahadarmannabid/downloads');
-    
-    if (!response.ok) {
-      return NextResponse.json(
-        { error: 'Failed to fetch counter' },
-        { status: 500 }
-      );
-    }
-    
-    const data = await response.json();
-    return NextResponse.json({ count: data.value || 0 });
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to fetch counter' },
-      { status: 500 }
-    );
-  }
+  // Return current download count
+  return NextResponse.json({ count: downloadCounter });
 }
 
 export async function POST() {
-  try {
-    // Increment the counter
-    const response = await fetch('https://api.countapi.xyz/hit/expert-goggles-rahadarmannabid/downloads');
-    
-    if (!response.ok) {
-      return NextResponse.json(
-        { error: 'Failed to increment counter' },
-        { status: 500 }
-      );
-    }
-    
-    const data = await response.json();
-    return NextResponse.json({ count: data.value || 0 });
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to increment counter' },
-      { status: 500 }
-    );
-  }
+  // Increment download count
+  downloadCounter++;
+  return NextResponse.json({ count: downloadCounter });
 }
 
