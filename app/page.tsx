@@ -9,7 +9,12 @@ export default function Home() {
   useEffect(() => {
     // Fetch global download count from API
     fetch('/api/downloads')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`API error: ${res.status}`);
+        }
+        return res.json();
+      })
       .then(data => setDownloadCount(data.count || 0))
       .catch(error => {
         console.error('Error fetching download count:', error);
@@ -334,4 +339,3 @@ export default function Home() {
     </div>
   );
 }
-
