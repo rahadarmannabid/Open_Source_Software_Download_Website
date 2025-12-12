@@ -9,13 +9,8 @@ export default function Home() {
   useEffect(() => {
     // Fetch global download count from API
     fetch('/api/downloads')
-      .then(res => {
-        if (!res.ok) {
-          throw new Error(`API error: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then(data => setDownloadCount(data.count || 0))
+      .then(res => res.json())
+      .then(data => setDownloadCount(data.count ?? 0))
       .catch(error => {
         console.error('Error fetching download count:', error);
         setDownloadCount(0);
@@ -31,10 +26,16 @@ export default function Home() {
         method: 'POST',
       });
       
-      const data = await response.json();
-      setDownloadCount(data.count);
+      if (response.ok) {
+        const data = await response.json();
+        setDownloadCount(data.count ?? 0);
+      } else {
+        console.error('Failed to increment download count:', response.status);
+        // Keep the current count on error
+      }
     } catch (error) {
       console.error('Error incrementing download count:', error);
+      // Keep the current count on error
     }
 
     // Trigger download
@@ -128,13 +129,13 @@ export default function Home() {
           </div>
 
           {/* Download Counter */}
-          {downloadCount !== null && (
+          {downloadCount !== null && downloadCount !== undefined && (
             <div className="inline-flex items-center gap-2 text-black dark:text-gray-300 bg-white dark:bg-gray-800 px-6 py-3 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
                 <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
               </svg>
-              <span className="font-medium text-base">{downloadCount.toLocaleString()} downloads</span>
+              <span className="font-medium text-base">{(downloadCount ?? 0).toLocaleString()} downloads</span>
             </div>
           )}
         </div>
