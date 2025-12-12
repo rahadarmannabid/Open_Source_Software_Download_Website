@@ -7,50 +7,34 @@ export default function Home() {
   const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
-    // Try CountAPI first, fallback to localStorage for local testing
-    fetch('https://api.countapi.xyz/get/expert-goggles/downloads', {
-      mode: 'cors',
-      cache: 'no-cache'
-    })
-      .then(res => {
-        if (!res.ok) throw new Error('API error');
-        return res.json();
-      })
-      .then(data => setDownloadCount(data.value || 0))
-      .catch(() => {
-        // Fallback to localStorage for local testing
-        const localCount = localStorage.getItem('expert-goggles-downloads');
-        setDownloadCount(localCount ? parseInt(localCount) : 0);
+    // Fetch global download count from API
+    fetch('/api/downloads')
+      .then(res => res.json())
+      .then(data => setDownloadCount(data.count || 0))
+      .catch(error => {
+        console.error('Error fetching download count:', error);
+        setDownloadCount(0);
       });
   }, []);
 
   const handleDownload = async () => {
     setIsDownloading(true);
     
-    // Increment download count
+    // Increment download count via API
     try {
-      const response = await fetch('https://api.countapi.xyz/hit/expert-goggles/downloads', {
-        mode: 'cors',
-        cache: 'no-cache'
+      const response = await fetch('/api/downloads', {
+        method: 'POST',
       });
       
-      if (!response.ok) throw new Error('API error');
-      
       const data = await response.json();
-      setDownloadCount(data.value);
-      localStorage.setItem('expert-goggles-downloads', data.value.toString());
+      setDownloadCount(data.count);
     } catch (error) {
-      console.warn('CountAPI unavailable, using local storage:', error);
-      // Fallback to localStorage
-      const currentCount = downloadCount || 0;
-      const newCount = currentCount + 1;
-      setDownloadCount(newCount);
-      localStorage.setItem('expert-goggles-downloads', newCount.toString());
+      console.error('Error incrementing download count:', error);
     }
 
     // Trigger download
     const link = document.createElement('a');
-    link.href = '/extension.zip';
+    link.href = '/Extension.zip';
     link.download = 'expert-goggles-extension.zip';
     document.body.appendChild(link);
     link.click();
