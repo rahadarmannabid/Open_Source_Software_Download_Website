@@ -12,8 +12,9 @@ export async function generateStaticParams() {
 export const dynamicParams = true;
 
 // Generate metadata for each tool page
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const tool = getToolById(params.id);
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const tool = getToolById(id);
   
   if (!tool) {
     return {
