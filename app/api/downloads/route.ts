@@ -1,27 +1,47 @@
 import { NextResponse } from 'next/server';
-import { kv } from '@vercel/kv';
+import { NextRequest } from 'next/server';
+import { initAdmin } from '@/lib/firebase';
 
-// Global download counter for all users worldwide
-// Using Vercel KV (Redis) for persistent storage across all deployments
+// Download counter for all tools
+// Using Firebase Realtime Database for persistent storage across all deployments
+// Each tool has its own counter at path: 'downloads/{toolId}'
 
-const COUNTER_KEY = 'expert-goggles-download-count';
-
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    // Get current download count from KV
-    const count = await kv.get<number>(COUNTER_KEY);
-    return NextResponse.json({ count: count || 0 });
+    // Get tool parameter from query string
+    const searchParams = request.nextUrl.searchParams;
+    const toolId = searchParams.get('tool') || 'expert-goggles';
+    
+    // Get current download count from Firebase
+    const db = initAdmin();
+    const ref = db.ref(`downloads/${toolId}`);
+    const snapshot = await ref.once('value');
+    const count = snapshot.val() || 0;
+    
+    return NextResponse.json({ count, tool: toolId });
   } catch (error) {
     console.error('Error fetching download count:', error);
     return NextResponse.json({ count: 0 });
   }
 }
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
-    // Increment download count in KV
-    const newCount = await kv.incr(COUNTER_KEY);
-    return NextResponse.json({ count: newCount });
+    // Get tool parameter from request body
+    const body = await request.json();
+    const toolId = body.tool || 'expert-goggles';
+    
+    // Increment download count in Firebase using transaction
+    const db = initAdmin();
+    const ref = db.ref(`downloads/${toolId}`);
+    
+    // Use transaction to safely increment the counter
+    const result = await ref.transaction((currentValue) => {
+      return (currentValue || 0) + 1;
+    });
+    
+    const newCount = result.snapshot.val();
+    return NextResponse.json({ count: newCount, tool: toolId });
   } catch (error) {
     console.error('Error incrementing download count:', error);
     return NextResponse.json(
