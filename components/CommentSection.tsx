@@ -29,10 +29,6 @@ export default function CommentSection({ toolId, toolName }: CommentSectionProps
   const [success, setSuccess] = useState('');
 
   // Fetch comments
-  useEffect(() => {
-    fetchComments();
-  }, [toolId]);
-
   const fetchComments = async () => {
     try {
       const response = await fetch(`/api/comments?tool=${toolId}`);
@@ -44,6 +40,11 @@ export default function CommentSection({ toolId, toolName }: CommentSectionProps
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchComments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toolId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -38,7 +38,7 @@ export default function ToolPage() {
   }, [tool]);
 
   const handleDownload = async () => {
-    if (!tool) return;
+    if (!tool || !tool.downloadFile) return;
     
     setIsDownloading(true);
     
