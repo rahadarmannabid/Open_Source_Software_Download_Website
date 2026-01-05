@@ -40,6 +40,7 @@ export default function ToolPage() {
   const handleDownload = async () => {
     if (!tool || !tool.downloadFile) return;
     
+    const downloadUrl = tool.downloadFile; // Store in const for TypeScript
     setIsDownloading(true);
     
     // Increment download count via API
@@ -60,7 +61,7 @@ export default function ToolPage() {
 
     // Trigger download
     const link = document.createElement('a');
-    link.href = tool.downloadFile;
+    link.href = downloadUrl;
     link.download = `${tool.id}.zip`;
     document.body.appendChild(link);
     link.click();
